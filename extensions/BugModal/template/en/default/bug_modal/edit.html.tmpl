@@ -188,7 +188,7 @@
 
     [%# alias %]
     [% INCLUDE bug_modal/field.html.tmpl
-        field = bug_fields.alias
+        field = bug_fields.alias.join(", ")
         field_type = constants.FIELD_TYPE_FREETEXT
         hide_on_view = 1
         short_width = 1
