@@ -1,0 +1,111 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, v. 2.0.
+ */
+
+.bz_alias_short_desc_container {
+    background: none;
+    font-size: 20px;
+    font-weight: normal;
+    line-height: 30px;
+    padding: 5px 0;
+    text-shadow: 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.bz_alias_short_desc_container b {
+    font-weight: normal;
+}
+
+.bz_alias_short_desc_container .editme {
+    font-weight: normal;
+}
+
+.bz_comment_tags {
+    background: #eee;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 5px;
+}
+
+.bz_comment_tag {
+    background: #fff;
+    color: #444;
+    border: none;
+    padding: 2px 6px;
+}
+
+.bz_comment_tag a {
+    color: #0095DD;
+}
+
+#bz_ctag_error {
+    border: none;
+    background-color: #faa;
+    color: #444;
+    padding: 2px 6px;
+}
+
+#bz_ctag_error a {
+    color: #0095DD;
+}
+
+body[class*=bz_group_] {
+    background-color: inherit;
+    background-image: url(index/noise.png), -moz-linear-gradient(#d7d7ff, #f0f0ff 400px);
+    background-image: url(index/noise.png), -webkit-linear-gradient(#d7d7ff, #f0f0ff 400px);
+    background-image: url(index/noise.png), linear-gradient(#d7d7ff, #f0f0ff 400px);
+}
+
+table.edit_form {
+    background: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding: 10px 10px 80px;
+    position: relative;
+}
+
+table.edit_form tbody {
+    width: 100%;
+}
+
+table.edit_form hr {
+    display: none;
+}
+
+.cc_list_display {
+    background: #fff;
+    float: none;
+    font-size: 11px;
+    margin-top: 3px;
+    max-width: none;
+    padding: 5px;
+}
+
+#project-flags, #custom-flags {
+    border-collapse: collapse;
+}
+
+#project-flags label, #custom-flags label {
+    margin-right: 10px;
+}
+
+#cf_crash_signature {
+    width: 100%;
+}
+
+.related_actions {
+    line-height: 19px;
+    padding: 5px 10px;
+}
+
+#viewFrame {
+    border: 2px solid #222;
+    margin-bottom: 10px;
+}
+
+#editFrame, #viewDiffFrame, #viewFrame {
+    margin-left: 0;
+}

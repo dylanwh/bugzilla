@@ -1,0 +1,347 @@
+[%# This Source Code Form is subject to the terms of the Mozilla Public
+  # License, v. 2.0. If a copy of the MPL was not distributed with this
+  # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  #
+  # This Source Code Form is "Incompatible With Secondary Licenses", as
+  # defined by the Mozilla Public License, v. 2.0.
+  #%]
+
+<div id="comment-actions">
+  <button type="button" id="comment-tags-btn" style="display:none" class="minor">Tags &#9662;</button>
+  <button type="button" id="view-menu-btn" class="minor">View &#9662;</button>
+</div>
+
+<menu id="view-menu" type="context" style="display:none">
+  <menuitem id="view-reset" label="Reset"></menuitem>
+  <hr>
+  <menuitem id="view-collapse-all" label="Collapse All"></menuitem>
+  <menuitem id="view-expand-all" label="Expand All"></menuitem>
+  <menuitem id="view-comments-only" label="Comments Only"></menuitem>
+  <hr>
+  <menuitem id="view-toggle-cc" label="Show CC Changes"></menuitem>
+  [% IF treeherder %]
+    <menuitem id="view-toggle-treeherder" label="Hide Treeherder Comments" data-userid="[% treeherder.id FILTER none %]"></menuitem>
+  [% END %]
+</menu>
+
+[%
+  PROCESS bug/time.html.tmpl;
+
+  FOREACH change_set IN bug.activity_stream;
+    extra_class = change_set.comment.collapsed ? " ca-" _ change_set.comment.author.id : "";
+    IF change_set.cc_only;
+      '<div class="change-set cc-only' _ extra_class _ '" id="' _ change_set.id _ '" style="display:none">';
+    ELSE;
+      '<div class="change-set' _ extra_class _ '" id="' _ change_set.id _ '">';
+    END;
+
+    extra_class = "";
+    IF change_set.user_id == bug.assigned_to.id;
+      extra_class = "assignee";
+    ELSIF change_set.user_id == bug.reporter.id;
+      extra_class = "reporter";
+    END;
+
+    IF change_set.comment;
+      PROCESS comment_header comment=change_set.comment;
+    ELSE;
+      PROCESS activity_header activities=change_set.activity id=change_set.id;
+    END;
+
+    IF change_set.comment;
+      PROCESS comment_body comment=change_set.comment;
+    END;
+    FOREACH activity IN change_set.activity;
+      PROCESS activity_body activity=activity change_set=change_set;
+    END;
+
+    '</div>';
+  END;
+%]
+
+[% IF user.can_tag_comments %]
+  <div id="ctag" style="display:none">
+    <input id="ctag-add" size="10" placeholder="add tag"
+      maxlength="[% constants.MAX_COMMENT_TAG_LENGTH FILTER html %]">
+    <button type="button" id="ctag-close" class="minor">X</button>
+    <a href="https://wiki.mozilla.org/BMO/comment_tagging" target="_blank" title="About Comment Tagging">Help</a>
+  </div>
+  <div id="ctag-error" style="display:none">
+    <a href="#" class="close-btn" data-for="ctag-error">x</a>
+    <span id="ctag-error-message"></span>
+  </div>
+[% END %]
+
+[% BLOCK comment_header %]
+  <div class="comment" data-id="[% comment.id FILTER none %]" data-no="[% comment.count FILTER none %]">
+    [%# normal comment header %]
+    <table class="layout-table change-head [% extra_class FILTER none %]" id="ch-[% comment.count FILTER none %]"
+      [% IF comment.collapsed +%] style="display:none"[% END %]>
+      <tr>
+        <td rowspan="2" class="change-gravatar">
+          [% INCLUDE bug_modal/user.html.tmpl
+              u = comment.author
+              gravatar_size = 32
+              gravatar_only = 1
+          %]
+        </td>
+
+        <td class="change-author">
+          [% INCLUDE bug_modal/user.html.tmpl
+              u = comment.author
+          %]
+          [% IF extra_class %]
+            <span class="user-role">([% extra_class.ucfirst FILTER none %])</span>
+          [% END %]
+          [% Hook.process('user', 'bug/comments.html.tmpl') %]
+        </td>
+
+        <td class="comment-actions">
+          [% IF user.is_insider && bug.check_can_change_field('longdesc', 0, 1) %]
+            [% IF comment.is_private %]
+              <div class="comment-private edit-hide bz_private">
+                Private
+              </div>
+            [% END %]
+            <div class="comment-private edit-show" style="display:none">
+              <input type="hidden" value="1" name="defined_isprivate_[% comment.id FILTER none %]">
+              <input type="checkbox" name="isprivate_[% comment.id FILTER none %]"
+                  id="is-private-[% comment.id FILTER none %]"
+                  class="is-private" value="1" [%= "checked" IF comment.is_private %]>
+              <label for="is-private-[% comment.id FILTER none %]">Private</label>
+            </div>
+          [% END %]
+          [% Hook.process('comment_action', 'bug_modal/activity_stream.html.tmpl') %]
+          [% IF user.id %]
+            [% IF user.can_tag_comments %]
+              <button class="tag-btn minor" type="button"
+                data-id="[% comment.id FILTER none %]"
+                data-no="[% comment.count FILTER none %]"
+              >Tag</button>
+            [% END %]
+            <button type="button" class="reply-btn minor"
+              data-reply-id="[% comment.count FILTER none %]"
+              data-reply-name="[% comment.author.name || comment.author.moz_nick FILTER html %]"
+              >Reply</button>
+          [% END %]
+          <button type="button" class="change-spinner minor" id="cs-[% comment.count FILTER none %]">-</button>
+        </td>
+      </tr>
+
+      <tr id="cr-[% comment.count FILTER none %]" [%= IF comment.collapsed %]style="display:none"[% END %]>
+        <td colspan="2">
+          <div class="change-name">
+            <a href="show_bug.cgi?id=[% bug.bug_id FILTER none %]#c[% comment.count FILTER none %]">
+              [% comment.count == 0 ? "Description" : "Comment " _ comment.count ~%]
+            </a>
+          </div>
+          &bull;
+          <div class="change-time">
+            [% INCLUDE bug_modal/rel_time.html.tmpl ts=comment.creation_ts %]
+          </div>
+        </td>
+      </tr>
+
+      <tr id="ctag-[% comment.count FILTER none %]">
+        <td colspan="2" class="comment-tags">
+          [% FOREACH tag IN comment.tags ~%]
+            <span class="comment-tag">
+              [%~ "<a>x</a>" IF user.can_tag_comments %][% tag FILTER html ~%]
+            </span>
+          [%~ END %]
+        </td>
+      </tr>
+    </table>
+
+    [%# default-collapsed comment header %]
+    [% IF comment.collapsed %]
+      <table class="layout-table change-head default-collapsed" id="cc-[% comment.count FILTER none %]">
+      <tr>
+        <td class="comment-collapse-reason"
+            title="[% comment.author.moz_nick FILTER html %] [[% comment.creation_ts FILTER time_duration FILTER html %]]">
+            Comment hidden ([% comment.collapsed_reason FILTER html %])
+        </td>
+        <td class="comment-actions">
+          <button type="button" class="change-spinner minor" id="ccs-[% comment.count FILTER none %]">
+            [%~ comment.collapsed ? "+" : "-" ~%]
+          </button>
+        </td>
+      </tr>
+      </table>
+    [% END %]
+  </div>
+[% END %]
+
+[% BLOCK activity_header %]
+  [% action = activities.0 %]
+  <div class="change" id="a[% id FILTER none %]">
+    <table class="layout-table change-head [% extra_class FILTER none %]">
+      <tr>
+        <td rowspan="2" class="change-gravatar">
+          [% INCLUDE bug_modal/user.html.tmpl
+              u = action.who
+              gravatar_size = 32
+              gravatar_only = 1
+          %]
+        </td>
+        <td class="change-author">
+          [% INCLUDE bug_modal/user.html.tmpl
+              u = action.who
+          %]
+          [% IF extra_class %]
+            <span class="user-role">([% extra_class.ucfirst FILTER none %])</span>
+          [% END %]
+        </td>
+        <td class="comment-actions">
+          <button type="button" class="change-spinner minor" id="as-[% id FILTER none %]">-</button>
+        </td>
+      </tr>
+      <tr id="ar-[% id FILTER none %]">
+        <td colspan="2">
+          <div class="change-name">
+            <a href="show_bug.cgi?id=[% bug.bug_id FILTER none %]#[% id FILTER none %]">Updated</a>
+          </div>
+          &bull;
+          <div class="change-time">
+            [% INCLUDE bug_modal/rel_time.html.tmpl ts=action.when %]
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+[% END %]
+
+[% BLOCK comment_body %]
+  <pre class="comment-text [%= "bz_private" IF comment.is_private %]" id="ct-[% comment.count FILTER none %]"
+    [% IF comment.collapsed +%] style="display:none"[% END ~%]
+  >[% FILTER collapse %]
+    [% IF comment.is_about_attachment && comment.attachment.is_image ~%]
+      <a href="attachment.cgi?id=[% comment.attachment.id FILTER none %]"
+        title="[% comment.attachment.description FILTER html %]"
+        class="lightbox"><img src="extensions/BugModal/web/image.png" width="16" height="16"></a>
+    [% END %]
+  [% END %]
+  [%~ comment.body_full FILTER quoteUrls(bug, comment) ~%]</pre>
+[% END %]
+
+[%
+  BLOCK activity_body;
+    classes = "activity";
+    style = "";
+    IF activity.cc_only && !change_set.cc_only;
+      classes = classes _ " cc-only";
+      style = ' style="display:none"';
+    END;
+    IF change_set.comment && change_set.comment.collapsed;
+      style = ' style="display:none"';
+    END;
+    '<div class="' _ classes _ '"' _ style _ '>';
+
+    FOREACH change IN activity.changes;
+      IF change.fieldname == 'cc' && !activity.cc_only && !change_set.cc_only;
+        '<div class="change cc-only" style="display:none">';
+      ELSE;
+        '<div class="change">';
+      END;
+
+      IF change.attachid;
+        %]
+        <a href="attachment.cgi?id=[% change.attachid FILTER none %]&amp;action=edit"
+           title="[% change.attach.description FILTER html %]"
+           class="[% "bz_obsolete" IF change.attach.isobsoletee %]"
+        >Attachment #[% change.attachid FILTER none %]</a> -
+        [%+
+      END;
+
+      IF change.buglist;
+        IF change.fieldname == 'duplicate';
+          label = "Duplicate of this " _ terms.bug;
+        ELSE;
+          label = field_descs.${change.fieldname};
+        END;
+        IF change.added != '';
+          label _ ": " FILTER html;
+          PROCESS add_change value=change.added;
+        END;
+        IF change.removed != '';
+          IF change.added != '';
+            "<br>";
+          END;
+          "No longer ";
+          label FILTER lcfirst;
+          ": ";
+          PROCESS add_change value=change.removed;
+        END;
+
+      ELSE;
+        IF change.fieldname == 'longdescs.isprivate';
+          # reference the comment that was made private/public in the field label
+          %]
+          <a href="#c[% change.comment.count FILTER none %]">
+            Comment [% change.comment.count FILTER none %]</a> is private:
+          [%+
+        ELSE;
+          field_descs.${change.fieldname} _ ": " FILTER html;
+        END;
+
+        IF change.removed != '';
+          IF change.added == '';
+            '<span class="activity-deleted">';
+          END;
+          PROCESS add_change value=change.removed;
+          IF change.added == '';
+            '</span>';
+          ELSE;
+            ' &rarr; ';
+          END;
+        END;
+        PROCESS add_change value=change.added;
+      END;
+
+      '</div>';
+    END;
+    '</div>';
+  END;
+
+  BLOCK add_change;
+    SWITCH change.fieldname;
+
+      CASE [ 'estimated_time', 'remaining_time', 'work_time' ];
+        PROCESS formattimeunit time_unit=value;
+
+      CASE 'bug_file_loc';
+        %]
+        <a href="[% value FILTER html %]" target="_blank" rel="noreferrer"
+           class="bug-url" data-safe="[% is_safe_url(value) ? 1 : 0 %]"
+        >[% value FILTER truncate(40) FILTER html %]</a>
+        [%
+
+      CASE 'see_also';
+        FOREACH see_also IN value;
+          IF see_also.bug_id;
+            "$terms.bug $see_also.bug_id" FILTER bug_link(see_also.bug_id);
+          ELSE;
+            %]
+            <a href="[% see_also.url FILTER html %]" target="_blank">[% see_also.url FILTER html %]</a>
+            [%
+          END;
+          ", " UNLESS loop.last;
+        END;
+
+      CASE [ 'assigned_to', 'reporter', 'qa_contact', 'cc', 'flagtypes.name' ];
+        value FILTER email;
+
+      CASE;
+        IF change.fieldtype == constants.FIELD_TYPE_DATETIME;
+          INCLUDE bug_modal/rel_time.html.tmpl ts=value;
+
+        ELSIF change.buglist;
+          value FILTER bug_list_link;
+
+        ELSE;
+          value FILTER truncate(256, '&hellip;') FILTER html;
+
+        END;
+    END;
+  END;
+%]

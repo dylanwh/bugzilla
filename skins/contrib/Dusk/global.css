@@ -39,6 +39,10 @@ body {
     text-decoration: underline;
 }
 
+.links .dropdown ul {
+    background: #929bb1;
+}
+
 /* body */
 
 #bugzilla-body {

@@ -1,0 +1,25 @@
+[%# This Source Code Form is subject to the terms of the Mozilla Public
+  # License, v. 2.0. If a copy of the MPL was not distributed with this
+  # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  #
+  # This Source Code Form is "Incompatible With Secondary Licenses", as
+  # defined by the Mozilla Public License, v. 2.0.
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% PROCESS global/header.html.tmpl
+   title = "File a $terms.Bug"
+   javascript_urls = [ "extensions/ProdCompSearch/web/js/prod_comp_search.js" ]
+   style_urls = [ "extensions/ProdCompSearch/web/styles/prod_comp_search.css" ]
+%]
+
+<div id="prod_comp_search_main">
+  [% PROCESS prodcompsearch/form.html.tmpl
+     input_label = "File a $terms.Bug:"
+     script_name = "enter_bug.cgi"
+     auto_focus  = 1
+  %]
+</div>
+
+[% PROCESS global/footer.html.tmpl %]

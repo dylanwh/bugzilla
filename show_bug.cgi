@@ -9,14 +9,15 @@
 use 5.10.1;
 use strict;
 use warnings;
-
 use lib qw(. lib);
 
 use Bugzilla;
 use Bugzilla::Constants;
 use Bugzilla::Error;
-use Bugzilla::Util;
+use Bugzilla::User;
+use Bugzilla::Keyword;
 use Bugzilla::Bug;
+use Bugzilla::Hook;
 
 my $cgi = Bugzilla->cgi;
 my $template = Bugzilla->template;
@@ -24,25 +25,33 @@ my $vars = {};
 
 my $user = Bugzilla->login();
 
-my $format = $template->get_format("bug/show", scalar $cgi->param('format'),
-                                   scalar $cgi->param('ctype'));
+# BMO: add show_bug_format for experimental UI work
+my $format_params = {
+    format => scalar $cgi->param('format'),
+    ctype  => scalar $cgi->param('ctype'),
+};
+Bugzilla::Hook::process('show_bug_format', $format_params);
+my $format = $template->get_format("bug/show",
+                                   $format_params->{format},
+                                   $format_params->{ctype});
 
 # Editable, 'single' HTML bugs are treated slightly specially in a few places
-my $single = !$format->{format} && $format->{extension} eq 'html';
+my $single = (!$format->{format} || $format->{format} ne 'multiple')
+             && $format->{extension} eq 'html';
 
 # If we don't have an ID, _AND_ we're only doing a single bug, then prompt
 if (!$cgi->param('id') && $single) {
-    print $cgi->header();
+    print Bugzilla->cgi->header();
     $template->process("bug/choose.html.tmpl", $vars) ||
       ThrowTemplateError($template->error());
     exit;
 }
 
-my (@bugs, @illegal_bugs);
+my @bugs;
 my %marks;
 
-# If the user isn't logged in, we use data from the shadow DB. If they plan
-# to edit the bug(s), they will have to log in first, meaning that the data
+# If the user isn't logged in, we use data from the shadow DB. If he plans
+# to edit the bug(s), he will have to log in first, meaning that the data
 # will be reloaded anyway, from the main DB.
 Bugzilla->switch_to_shadow_db unless $user->id;
 
@@ -64,36 +73,22 @@ if ($single) {
     foreach my $id ($cgi->param('id')) {
         # Be kind enough and accept URLs of the form: id=1,2,3.
         my @ids = split(/,/, $id);
-        my @check_bugs;
-
         foreach my $bug_id (@ids) {
-            next unless $bug_id;
             my $bug = new Bugzilla::Bug({ id => $bug_id, cache => 1 });
-            if (!$bug->{error}) {
-                push(@check_bugs, $bug);
+            # This is basically a backwards-compatibility hack from when
+            # Bugzilla::Bug->new used to set 'NotPermitted' if you couldn't
+            # see the bug.
+            if (!$bug->{error} && !$user->can_see_bug($bug->bug_id)) {
+                $bug->{error} = 'NotPermitted';
             }
-            else {
-                push(@illegal_bugs, { bug_id => trim($bug_id), error => $bug->{error} });
-            }
-        }
-
-        $user->visible_bugs(\@check_bugs);
-
-        foreach my $bug (@check_bugs) {
-            if ($user->can_see_bug($bug->id)) {
-                push(@bugs, $bug);
-            }
-            else {
-                my $error = 'NotPermitted'; # Trick to make 012throwables.t happy.
-                push(@illegal_bugs, { bug_id => $bug->id, error => $error });
-            }
+            push(@bugs, $bug);
         }
     }
 }
 
 Bugzilla::Bug->preload(\@bugs);
 
-$vars->{'bugs'} = [@bugs, @illegal_bugs];
+$vars->{'bugs'} = \@bugs;
 $vars->{'marks'} = \%marks;
 
 my @bugids = map {$_->bug_id} grep {!$_->error} @bugs;

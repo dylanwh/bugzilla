@@ -18,7 +18,7 @@ use parent qw(Exporter);
                              i_am_cgi i_am_webservice correct_urlbase remote_ip
                              validate_ip do_ssl_redirect_if_required use_attachbase
                              diff_arrays on_main_db
-                             trim wrap_hard wrap_comment find_wrap_point
+                             trim wrap_hard wrap_comment find_wrap_point round
                              format_time validate_date validate_time datetime_from time_ago
                              is_7bit_clean bz_crypt generate_random_password
                              validate_email_syntax check_email_syntax clean_text
@@ -39,6 +39,7 @@ use Scalar::Util qw(tainted blessed);
 use Text::Wrap;
 use Encode qw(encode decode resolve_alias);
 use Encode::Guess;
+use POSIX qw(floor ceil);
 
 sub time_ago {
     my ($param) = @_;
@@ -62,6 +63,16 @@ sub time_ago {
     return $mo . ' months ago'  if $mo < 12;
     return 'a year ago'         if $mo < 18;
     return $yy . ' years ago';
+}
+
+use constant ROUND_HALF => 0.50000000000008;
+sub round {
+    my @res = map {
+        $_ >= 0
+            ? floor($_ + ROUND_HALF)
+            : ceil($_ - ROUND_HALF);
+    } @_;
+    return (wantarray) ? @res : $res[0];
 }
 
 sub trick_taint {

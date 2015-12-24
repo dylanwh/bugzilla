@@ -1,0 +1,59 @@
+[%# This Source Code Form is subject to the terms of the Mozilla Public
+  # License, v. 2.0. If a copy of the MPL was not distributed with this
+  # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  #
+  # This Source Code Form is "Incompatible With Secondary Licenses", as
+  # defined by the Mozilla Public License, v. 2.0.
+  #%]
+
+[%#
+  # parameters (all are optional, defaults below)
+  # id:               id and prefix of elements
+  # script_name:      .cgi to redirect to
+  # max_results:      maximum results displayed
+  # input_label:      input field label
+  # auto_focus:       focus the search form on page load
+  # format:           format parameter passed to cgi
+  # cloned_bug_id:    cloned_bug_id parameter
+  # new_tab:          open in a new tab
+  # anchor_component: append #component to url
+  # custom_select:    when true don't manage menu-item selects
+  # hidden:           initialise container as display:none
+  # throbber:         id of the throbber element
+  #%]
+
+[%
+  DEFAULT id          = "pcs";
+  DEFAULT max_results = 100;
+  DEFAULT script_name = "enter_bug.cgi";
+  DEFAULT throbber    = id _ "-throbber";
+%]
+
+<div class="pcs-form" [%= 'style="display:none"' IF hidden %]>
+  <div class="pcs-header">
+    [% input_label FILTER none %]&nbsp;
+    <img id="[% id FILTER html %]-throbber"
+      src="extensions/ProdCompSearch/web/images/throbber.gif"
+      style="display:none" width="16" height="11">
+    <span class="pcs-message" id="[% id FILTER html %]-no_results" style="display:none">
+      No components found
+    </span>
+    <span class="pcs-message" id="[% id FILTER html %]-too_many_results" style="display:none">
+      Result limited to [% max_results FILTER html %] components
+    </span>
+    <span class="pcs-message" id="[% id FILTER html %]-error" style="display:none">
+      An error occured
+    </span>
+  </div>
+  <input type="text" class="prod_comp_search" id="[% id FILTER html %]" size="50"
+    placeholder="Search by product and component"
+    data-script_name="[% script_name FILTER html %]"
+    data-format="[% format FILTER html %]"
+    data-cloned_bug_id="[% cloned_bug_id FILTER html %]"
+    data-new_tab="[% new_tab ? "1" : "0" %]"
+    data-anchor_component="[% anchor_component ? "1" : "0" %]"
+    data-max_results="[% max_results FILTER html %]"
+    data-ignore-select="[% custom_select ? "1" : "0" %]"
+    data-throbber="[% throbber FILTER html %]"
+    [% "autofocus" IF auto_focus %]>
+</div>

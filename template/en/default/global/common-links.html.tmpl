@@ -37,43 +37,46 @@
 
   <li><span class="separator">| </span><a href="report.cgi">Reports</a></li>
 
-  <li>
-    [% IF Param('shutdownhtml') || Bugzilla.has_flags %]
-      <span class="separator">| </span>
-      [% IF user.id %]
-        <a href="request.cgi?requester=[% user.login FILTER uri %]&amp;requestee=
-                 [% user.login FILTER uri %]&amp;do_union=1&amp;group=type&amp;action=queue">My Requests</a>
-      [% ELSE %]
-        <a href="request.cgi">Requests</a>
-      [% END %]
-    [% END %]
-  [%-# Work around FF bug: keep this on one line %]</li>
-
   [% Hook.process('action-links') %]
 
   [% IF user.login %]
-    <li><span class="separator">| </span><a href="userprefs.cgi">Preferences</a></li>
-    [% IF user.can_administer %]
-      <li><span class="separator">| </span><a href="admin.cgi">Administration</a></li>
+    [% IF qs_suffix == "_top" %]
+        <li class="dropdown">
+            <span class="anchor">[% user.login FILTER html %]</span>
+            <ul>
+                [% IF user.showmybugslink %]
+                    [% filtered_username = user.login FILTER uri %]
+                    <li>
+                        <a href="[% Param('mybugstemplate').replace('%userid%', filtered_username) %]">My [% terms.Bugs %]</a>
+                    </li>
+                [% END %]
+                <li>
+                    <a href="request.cgi?requester=[% user.login FILTER uri %]&amp;requestee=[% user.login FILTER uri %]&amp;do_union=1&amp;group=type&amp;action=queue">My Requests</a>
+                </li>
+                <li>
+                    <a href="userprefs.cgi">Preferences</a>
+                </li>
+                [% IF user.can_administer %]
+                    <li>
+                        <a href="admin.cgi">Administration</a>
+                    </li>
+                [% END %]
+                [% IF user.authorizer.can_logout %]
+                    <li>
+                        <a href="index.cgi?logout=1">Log&nbsp;out</a>
+                    </li>
+                [% END %]
+                [% IF sudoer %]
+                    <li>
+                        <a href="relogin.cgi?action=end-sudo">End sudo session impersonating [% user.login FILTER html %]</a>
+                    </li>
+                [% END %]
+            </ul>
+        </li>
     [% END %]
 
     [% PROCESS link_to_documentation %]
 
-    <li>
-      <span class="separator">| </span>
-      [% IF user.authorizer.can_logout %]
-        <a href="index.cgi?logout=1">Log&nbsp;out</a>
-      [% ELSE %]
-        Logged&nbsp;in&nbsp;as
-      [% END %]
-      [% IF sudoer %]
-        [%+ sudoer.login FILTER html %] (<b>impersonating
-        [%+ user.login FILTER html %]</b>
-        <a href="relogin.cgi?action=end-sudo">end session</a>)
-      [% ELSE %]
-        [%+ user.login FILTER html %]
-      [% END %]
-    [%-# Work around FF bug: keep this on one line %]</li>
   [% ELSE %]
   
     [% PROCESS link_to_documentation %]
