@@ -406,8 +406,9 @@ sub set_clusions {
             $clusions_as_hash{$prod_id}->{$comp_id} = 1;
         }
 
+
         # Check the user has the editcomponent permission on products that are changing
-        if (! $user->in_group('editcomponents')) {
+        if (Bugzilla->usage_mode != USAGE_MODE_CMDLINE && !$user->in_group('editcomponents')) {
             my $current_clusions = $self->$category;
             my ($removed, $added)
                 = diff_arrays([ values %$current_clusions ], [ values %clusions ]);

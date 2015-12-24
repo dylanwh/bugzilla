@@ -19,7 +19,7 @@ use parent qw(Exporter);
                              validate_ip do_ssl_redirect_if_required use_attachbase
                              diff_arrays on_main_db
                              trim wrap_hard wrap_comment find_wrap_point
-                             format_time validate_date validate_time datetime_from
+                             format_time validate_date validate_time datetime_from time_ago
                              is_7bit_clean bz_crypt generate_random_password
                              validate_email_syntax check_email_syntax clean_text
                              get_text template_var display_value disable_utf8
@@ -39,6 +39,30 @@ use Scalar::Util qw(tainted blessed);
 use Text::Wrap;
 use Encode qw(encode decode resolve_alias);
 use Encode::Guess;
+
+sub time_ago {
+    my ($param) = @_;
+    # DateTime object or seconds
+    my $ss = ref($param) ? time() - $param->epoch : $param;
+    my $mm = round($ss / 60);
+    my $hh = round($mm / 60);
+    my $dd = round($hh / 24);
+    my $mo = round($dd / 30);
+    my $yy = round($mo / 12);
+
+    return 'just now'           if $ss < 10;
+    return $ss . ' seconds ago' if $ss < 45;
+    return 'a minute ago'       if $ss < 90;
+    return $mm . ' minutes ago' if $mm < 45;
+    return 'an hour ago'        if $mm < 90;
+    return $hh . ' hours ago'   if $hh < 24;
+    return 'a day ago'          if $hh < 36;
+    return $dd . ' days ago'    if $dd < 30;
+    return 'a month ago'        if $dd < 45;
+    return $mo . ' months ago'  if $mo < 12;
+    return 'a year ago'         if $mo < 18;
+    return $yy . ' years ago';
+}
 
 sub trick_taint {
     require Carp;
