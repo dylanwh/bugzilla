@@ -187,6 +187,7 @@ if (defined $cgi->param('id')) {
     # Include both action = 'same_bug' and 'nothing'.
     else {
         $vars->{'bug'} = $first_bug;
+        $vars->{'bugids'} = $first_bug->id;
     }
 }
 else {
@@ -412,11 +413,22 @@ elsif ($action eq 'next_bug' or $action eq 'same_bug') {
         if ($action eq 'next_bug') {
             $vars->{'nextbug'} = $bug->id;
         }
+
+        # BMO: add show_bug_format hook for experimental UI work
+        my $format_params = {
+            format => scalar $cgi->param('format'),
+            ctype  => scalar $cgi->param('ctype'),
+        };
+        Bugzilla::Hook::process('show_bug_format', $format_params);
+        my $format = $template->get_format("bug/show",
+                                           $format_params->{format},
+                                           $format_params->{ctype});
+
         # For performance reasons, preload visibility of dependencies
         # and duplicates related to this bug.
         Bugzilla::Bug->preload([$bug]);
 
-        $template->process("bug/show.html.tmpl", $vars)
+        $template->process($format->{template}, $vars)
           || ThrowTemplateError($template->error());
         exit;
     }
