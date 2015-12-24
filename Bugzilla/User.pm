@@ -487,6 +487,23 @@ sub cryptpassword {
     return $pw;
 }
 
+sub nickname {
+    my ($self) = @_;
+    if (!exists $self->{nickname}) {
+        if ($self->name =~ /:?:(.+?)\b/) {
+            $self->{nickname} = $1;
+        }
+        elsif ($self->name) {
+            $self->{nickname} = $self->name;
+        }
+        else {
+            $self->login =~ /^([^\@]+)\@/;
+            $self->{nickname} = $1;
+        }
+    }
+    return $self->{nickname};
+}
+
 sub set_authorizer {
     my ($self, $authorizer) = @_;
     $self->{authorizer} = $authorizer;

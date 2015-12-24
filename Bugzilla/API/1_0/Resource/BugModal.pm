@@ -149,7 +149,7 @@ sub cc {
     my $bug = Bugzilla::Bug->check({ id => $params->{id} });
     my $vars = {
         cc_list => [
-            sort { lc($a->moz_nick) cmp lc($b->moz_nick) }
+            sort { lc($a->nickname) cmp lc($b->nickname) }
             @{ $bug->cc_users }
         ]
     };

@@ -304,6 +304,11 @@ sub is_viewable {
     return 0;
 }
 
+sub is_image {
+    my ($self) = @_;
+    return substr($self->contenttype, 0, 6) eq 'image/';
+}
+
 =over
 
 =item C<data>

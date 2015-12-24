@@ -3470,6 +3470,13 @@ sub attachments {
     return $self->{'attachments'};
 }
 
+sub active_attachments {
+    my ($self) = @_;
+    return [] if $self->{error};
+    return $self->{active_attachments} //= Bugzilla::Attachment->get_attachments_by_bug(
+        $self, { exclude_obsolete => 1, preload => 1 });
+}
+
 sub assigned_to {
     my ($self) = @_;
     return $self->{'assigned_to_obj'} if exists $self->{'assigned_to_obj'};

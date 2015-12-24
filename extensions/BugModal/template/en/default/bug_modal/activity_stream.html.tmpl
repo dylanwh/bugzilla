@@ -121,7 +121,7 @@
             [% END %]
             <button type="button" class="reply-btn minor"
               data-reply-id="[% comment.count FILTER none %]"
-              data-reply-name="[% comment.author.name || comment.author.moz_nick FILTER html %]"
+              data-reply-name="[% comment.author.name || comment.author.nickname FILTER html %]"
               >Reply</button>
           [% END %]
           <button type="button" class="change-spinner minor" id="cs-[% comment.count FILTER none %]">-</button>
@@ -158,7 +158,7 @@
       <table class="layout-table change-head default-collapsed" id="cc-[% comment.count FILTER none %]">
       <tr>
         <td class="comment-collapse-reason"
-            title="[% comment.author.moz_nick FILTER html %] [[% comment.creation_ts FILTER time_duration FILTER html %]]">
+            title="[% comment.author.nickname FILTER html %] [[% comment.creation_ts FILTER time_duration FILTER html %]]">
             Comment hidden ([% comment.collapsed_reason FILTER html %])
         </td>
         <td class="comment-actions">

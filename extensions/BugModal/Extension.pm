@@ -13,7 +13,6 @@ use warnings;
 use base qw(Bugzilla::Extension);
 
 use Bugzilla::Extension::BugModal::ActivityStream;
-use Bugzilla::Extension::BugModal::MonkeyPatches;
 use Bugzilla::Extension::BugModal::Util qw(date_str_to_time);
 use Bugzilla::Constants;
 use Bugzilla::User::Setting;
@@ -256,13 +255,13 @@ sub template_before_process {
     $vars->{tracking_flags_table} = \@tracking_table;
 
     # for the "view -> hide treeherder comments" menu item
-    my $treeherder_id = Bugzilla->treeherder_user->id;
-    foreach my $change_set (@{ $bug->activity_stream }) {
-        if ($change_set->{comment} && $change_set->{comment}->author->id == $treeherder_id) {
-            $vars->{treeherder} = Bugzilla->treeherder_user;
-            last;
-        }
-    }
+    # my $treeherder_id = Bugzilla->treeherder_user->id;
+    # foreach my $change_set (@{ $bug->activity_stream }) {
+    #     if ($change_set->{comment} && $change_set->{comment}->author->id == $treeherder_id) {
+    #         $vars->{treeherder} = Bugzilla->treeherder_user;
+    #         last;
+    #     }
+    # }
 }
 
 sub bug_start_of_set_all {
