@@ -336,6 +336,8 @@ sub header {
     # the MIME type away from the declared Content-Type.
     $headers{'-x_content_type_options'} = 'nosniff';
 
+    $headers{Cache_Control} = 'private';
+
     Bugzilla::Hook::process('cgi_headers',
         { cgi => $self, headers => \%headers }
     );
