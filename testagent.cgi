@@ -13,12 +13,8 @@
 use 5.14.0;
 use strict;
 use warnings;
-use Bugzilla;
-use Bugzilla::Util qw(remote_ip);
 
 say "content-type:text/plain\n";
 
 print 'OK ';
 say $ENV{BZ_PLACK} || $ENV{MOD_PERL} || 'mod_cgi';
-say "remove ip: ", remote_ip();
-say "$_=$ENV{$_}" for keys %ENV;
