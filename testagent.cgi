@@ -21,3 +21,4 @@ say "content-type:text/plain\n";
 print 'OK ';
 say $ENV{BZ_PLACK} || $ENV{MOD_PERL} || 'mod_cgi';
 say "remove ip: ", remote_ip();
+say "$_=$ENV{$_}" for keys %ENV;
