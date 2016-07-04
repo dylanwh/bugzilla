@@ -141,7 +141,7 @@ sub update_params {
             if -e "$old_file.js" && !-e "$old_file.json";
 
         # Read the new data/params.json file.
-        $param = read_param_file();
+        $param = read_params();
     }
 
     my %new_params;
@@ -340,11 +340,8 @@ sub read_params {
     state $read_only_fs = Bugzilla->localconfig->{read_only_fs};
     if ($read_only_fs) {
         my $dbh = Bugzilla->dbh_main;
-        local $SIG{__DIE__} = undef;
-        my $params = eval {
-             $dbh->selectall_hashref("SELECT param_key, param_value FROM params", "param_key");
-        };
-        return $params // read_param_file();
+        my %params = map { @$_ } @{$dbh->selectall_arrayref("SELECT param_key, param_val FROM params")};
+        return \%params;
     }
     else {
         return read_param_file();
