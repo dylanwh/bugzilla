@@ -302,6 +302,9 @@ use constant OPERATOR_FIELD_OVERRIDE => {
         changedto     => \&_invalid_combination,
     },
     keywords         => MULTI_SELECT_OVERRIDE,
+    single_keyword  => {
+        _non_changed => \&_single_keyword_nonchanged,
+    },
     'flagtypes.name' => {
         _non_changed => \&_flagtypes_nonchanged,
     },
@@ -2664,6 +2667,20 @@ sub _long_desc_nonchanged {
     push(@$joins, $join);
 
     $args->{term} =  "$table.comment_id IS NOT NULL";
+}
+
+sub _single_keyword_nonchanged {
+    my ($self, $args) = @_;
+    my ($chart_id, $joins, $fields, $operator, $value) =
+        @$args{qw(chart_id joins fields operator value)};
+    my $dbh = Bugzilla->dbh;
+
+    my $keywords_table = 'keywords_' . $chart_id;
+    my $keyworddefs_table = 'keyworddefs_' . $chart_id;
+    push(@$joins, { table => 'keywords', as => $keywords_table });
+    push(@$joins, { table => 'keyworddefs', as => $keyworddefs_table, from => "$keywords_table.keywordid", to => 'id' });
+
+    $args->{full_field} = "$keyworddefs_table.name"
 }
 
 sub _content_matches {

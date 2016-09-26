@@ -269,6 +269,7 @@ use constant DEFAULT_FIELDS => (
      type => FIELD_TYPE_DATETIME},
     {name => 'comment_tag',           desc => 'Comment Tag'},
     {name => 'dupe_of',               desc => 'Duplicate of'},
+    {name => 'single_keyword', desc => 'Single Keyword'},
 );
 
 ################
