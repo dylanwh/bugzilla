@@ -21,6 +21,8 @@ BEGIN {
     *lib::import = sub { };
 }
 
+BEGIN { $ENV{BZ_PLACK} = 'Plack' }
+
 use Bugzilla::Constants ();
 
 use Plack;
@@ -40,8 +42,6 @@ use constant STATIC => qw(
     skins/
     robots\.txt
 );
-
-$ENV{BZ_PLACK} = 'Plack/' . Plack->VERSION;
 
 my $app = builder {
     my $static_paths  = join('|', sort { length $b <=> length $a || $a cmp $b } STATIC);
