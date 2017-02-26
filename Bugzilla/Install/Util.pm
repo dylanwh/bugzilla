@@ -156,7 +156,7 @@ sub extension_requirement_packages {
     # If we're in a .cgi script or some time that's not the requirements phase,
     # just use Bugzilla->extensions. This avoids running the below code during
     # a normal Bugzilla page, which is important because the below code
-    # doesn't actually function right if it runs after 
+    # doesn't actually function right if it runs after
     # Bugzilla::Extension->load_all (because stuff has already been loaded).
     # (This matters because almost every page calls Bugzilla->feature, which
     # calls OPTIONAL_MODULES, which calls this method.)
@@ -173,7 +173,7 @@ sub extension_requirement_packages {
     return $packages if $packages;
     $packages = [];
     my %package_map;
-    
+
     my ($file_sets, $extra_packages) = extension_code_files('requirements only');
     foreach my $file_set (@$file_sets) {
         my $file = shift @$file_set;
@@ -282,7 +282,7 @@ sub install_string {
     my ($string_id, $vars) = @_;
     _cache()->{install_string_path} ||= template_include_path();
     my $path = _cache()->{install_string_path};
-    
+
     my $string_template;
     # Find the first template that defines this string.
     foreach my $dir (@$path) {
@@ -291,7 +291,7 @@ sub install_string {
             if !defined $string_template;
         last if defined $string_template;
     }
-    
+
     die "No language defines the string '$string_id'"
         if !defined $string_template;
 
@@ -406,7 +406,7 @@ sub include_languages {
 # Used by template_include_path
 sub _template_lang_directories {
     my ($languages, $templatedir) = @_;
-    
+
     my @add = qw(custom default);
     my $project = bz_locations->{'project'};
     unshift(@add, $project) if $project;
@@ -431,7 +431,7 @@ sub _template_base_directories {
     # that Bugzilla templates are localized.
     #
     # We use extension_requirement_packages instead of Bugzilla->extensions
-    # because this fucntion is called during the requirements phase of 
+    # because this fucntion is called during the requirements phase of
     # installation (so Bugzilla->extensions isn't available).
     my $extensions = extension_requirement_packages();
     my @template_dirs;
@@ -457,7 +457,7 @@ sub _template_base_directories {
     foreach my $path (_extension_paths()) {
         next if !-d $path;
         if (!-e "$path/Extension.pm" and !-e "$path/Config.pm"
-            and -d "$path/template") 
+            and -d "$path/template")
         {
             push(@template_dirs, "$path/template");
         }
@@ -472,11 +472,11 @@ sub template_include_path {
     my ($params) = @_;
     my @used_languages = include_languages($params);
     # Now, we add template directories in the order they will be searched:
-    my $template_dirs = _template_base_directories(); 
+    my $template_dirs = _template_base_directories();
 
     my @include_path;
     foreach my $template_dir (@$template_dirs) {
-        my @lang_dirs = _template_lang_directories(\@used_languages, 
+        my @lang_dirs = _template_lang_directories(\@used_languages,
                                                    $template_dir);
         # Hooks get each set of extension directories separately.
         if ($params->{hook}) {
@@ -647,7 +647,7 @@ sub prevent_windows_dialog_boxes {
         # "The system does not display the critical-error-handler message box.
         # Instead, the system sends the error to the calling process." and
         # "A child process inherits the error mode of its parent process."
-        my $SetErrorMode = Win32::API->new('kernel32', 'SetErrorMode', 
+        my $SetErrorMode = Win32::API->new('kernel32', 'SetErrorMode',
                                            'I', 'I');
         my $SEM_FAILCRITICALERRORS = 0x0001;
         my $SEM_NOGPFAULTERRORBOX  = 0x0002;
@@ -855,13 +855,13 @@ in their browser, usually), and extensions are sorted alphabetically.
 
 =item C<include_languages>
 
-Used by L<Bugzilla::Template> to determine the languages' list which 
-are compiled with the browser's I<Accept-Language> and the languages 
+Used by L<Bugzilla::Template> to determine the languages' list which
+are compiled with the browser's I<Accept-Language> and the languages
 of installed templates.
 
 =item C<feature_description>
 
-Return the English-language description of a feature from the (MY)META.json files.
+Return the English-language description of a feature from the MYMETA.json files.
 
 =back
 
