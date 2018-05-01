@@ -16,6 +16,8 @@ use Bugzilla::Error;
 use Bugzilla::Install::Util qw(install_string);
 use Bugzilla::Util qw(read_text);
 use File::Basename;
+use Cwd qw(realpath);
+use File::Spec;
 use base qw(TheSchwartz);
 use fields qw(_worker_pidfile);
 
@@ -107,7 +109,8 @@ sub insert {
 sub subprocess_worker {
     my $self = shift;
 
-    my $command = "$0 -d -p '" . $self->{_worker_pidfile} . "' onepass";
+    my $executable = File::Spec->catfile(realpath(dirname(__FILE__)), '..', 'jobqueue.pl');
+    my $command = "$executable -d -p '" . $self->{_worker_pidfile} . "' onepass";
 
     while (1) {
         my $time = (time);
